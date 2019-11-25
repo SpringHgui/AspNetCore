@@ -31,6 +31,8 @@ namespace Templates.Test.Helpers
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
+        public string ProjectDirectory { get; set; }
+        public string AppName { get; set; }
         public string ProjectName { get; set; }
         public string ProjectArguments { get; set; }
         public string ProjectGuid { get; set; }
@@ -110,7 +112,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -121,7 +123,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl /nr:false {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -132,7 +134,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -143,7 +145,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug /bl /nr:false {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -211,7 +213,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
@@ -521,6 +523,28 @@ namespace Templates.Test.Helpers
                 var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
                 File.Move(sourceFile, destination);
             }
+        }
+
+        public Project GetSubProject(string projectDirectory, string projectName)
+        {
+            var subProjectDirectory = Path.Combine(TemplateOutputDir, projectDirectory);
+            if (!Directory.Exists(subProjectDirectory))
+            {
+                throw new DirectoryNotFoundException($"Directory {subProjectDirectory} was not found.");
+            }
+
+            var project = new Project
+            {
+                AppName = AppName,
+                DotNetNewLock = DotNetNewLock,
+                NodeLock = NodeLock,
+                Output = Output,
+                DiagnosticsMessageSink = DiagnosticsMessageSink,
+                ProjectName = projectName,
+                TemplateOutputDir = subProjectDirectory,
+            };
+
+            return project;
         }
 
         public override string ToString() => $"{ProjectName}: {TemplateOutputDir}";

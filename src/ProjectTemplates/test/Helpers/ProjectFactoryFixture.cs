@@ -51,6 +51,7 @@ namespace Templates.Test.Helpers
                         ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
                     };
                     project.ProjectName = $"AspNet.{key}.{project.ProjectGuid}";
+                    project.AppName = project.ProjectName;
 
                     var assemblyPath = GetType().Assembly;
                     string basePath = GetTemplateFolderBasePath(assemblyPath);
