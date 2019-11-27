@@ -66,7 +66,6 @@ namespace Templates.Test
         {
             // Give components.server enough time to load so that it can replace
             // the prerendered content before we start making assertions.
-            Thread.Sleep(5000);
             Browser.Exists(By.TagName("ul"));
 
             // <title> element gets project ID injected into it during template execution

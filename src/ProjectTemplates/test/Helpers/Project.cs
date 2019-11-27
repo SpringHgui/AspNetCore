@@ -31,7 +31,6 @@ namespace Templates.Test.Helpers
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
-        public string ProjectDirectory { get; set; }
         public string AppName { get; set; }
         public string ProjectName { get; set; }
         public string ProjectArguments { get; set; }
