@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
     <Description>Templates for ASP.NET Core Blazor projects.</Description>
     <PackageTags>$(PackageTags);blazor;spa</PackageTags>
